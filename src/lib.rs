@@ -37,24 +37,45 @@ pub async fn run(
     url.set_query(None);
     println!("Connected to {}", url);
 
-    write
-        .send(Message::Text(
-            r#"{"type":"subscribe","symbol":"BINANCE:BTCUSDT"}"#.to_owned(),
-        ))
-        .await?;
-    write
-        .send(Message::Text(
-            r#"{"type":"subscribe","symbol":"IC MARKETS:1"}"#.to_owned(),
-        ))
-        .await?;
+    tokio::spawn(async move {
+        let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(60));
+        loop {
+            interval.tick().await;
+            write
+                .send(Message::Text(
+                    r#"{"type":"subscribe","symbol":"BINANCE:BTCUSDT"}"#.to_owned(),
+                ))
+                .await
+                .unwrap_or_default();
+            write
+                .send(Message::Text(
+                    r#"{"type":"subscribe","symbol":"IC MARKETS:1"}"#.to_owned(),
+                ))
+                .await
+                .unwrap_or_default();
+        }
+    });
 
     read.for_each(|message| async {
-        let data = message.unwrap().into_data();
-        //tokio::io::stdout().write_all(&data).await.unwrap();
+        let data = if let Ok(message) = message {
+            message.into_data()
+        } else if let Err(e) = message {
+            tokio::io::stdout()
+                .write_all(format!("Error while decoding message: {}", e).as_bytes())
+                .await
+                .unwrap_or_default();
+            return;
+        } else {
+            return;
+        };
         match str::from_utf8(&data) {
             Ok(wsmes) => {
                 if let Ok(wsmes) = serde_json::from_str::<WSMessage>(wsmes) {
                     if wsmes.type_ != "trade" {
+                        tokio::io::stdout()
+                            .write_all(format!("Invalid Json type {}", wsmes.type_).as_bytes())
+                            .await
+                            .unwrap_or_default();
                         return;
                     }
                     for data in wsmes.data.iter() {
@@ -71,14 +92,14 @@ pub async fn run(
                     tokio::io::stdout()
                         .write_all(format!("Invalid UTF-8 sequence: {}", wsmes).as_bytes())
                         .await
-                        .unwrap_or(());
+                        .unwrap_or_default();
                 }
             }
             Err(e) => {
                 tokio::io::stdout()
                     .write_all(format!("Invalid UTF-8 sequence: {}", e).as_bytes())
                     .await
-                    .unwrap_or(());
+                    .unwrap_or_default();
             }
         };
     })
