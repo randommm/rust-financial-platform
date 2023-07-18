@@ -37,24 +37,18 @@ pub async fn run(
     url.set_query(None);
     println!("Connected to {}", url);
 
-    tokio::spawn(async move {
-        let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(60));
-        loop {
-            interval.tick().await;
-            write
-                .send(Message::Text(
-                    r#"{"type":"subscribe","symbol":"BINANCE:BTCUSDT"}"#.to_owned(),
-                ))
-                .await
-                .unwrap_or_default();
-            write
-                .send(Message::Text(
-                    r#"{"type":"subscribe","symbol":"IC MARKETS:1"}"#.to_owned(),
-                ))
-                .await
-                .unwrap_or_default();
-        }
-    });
+    write
+        .send(Message::Text(
+            r#"{"type":"subscribe","symbol":"BINANCE:BTCUSDT"}"#.to_owned(),
+        ))
+        .await
+        .unwrap_or_default();
+    write
+        .send(Message::Text(
+            r#"{"type":"subscribe","symbol":"IC MARKETS:1"}"#.to_owned(),
+        ))
+        .await
+        .unwrap_or_default();
 
     read.for_each(|message| async {
         let data = if let Ok(message) = message {
@@ -79,18 +73,18 @@ pub async fn run(
                         return;
                     }
                     for data in wsmes.data.iter() {
-                        let post = trade::ActiveModel {
+                        let trade = trade::ActiveModel {
                             price: Set(data.p),
                             security: Set(data.s.clone()),
                             timestamp: Set(data.t / 1000.),
                             value: Set(data.v),
                             ..Default::default()
                         };
-                        post.save(&db).await.unwrap_or_default();
+                        trade.save(&db).await.unwrap_or_default();
                     }
                 } else {
                     tokio::io::stdout()
-                        .write_all(format!("Invalid UTF-8 sequence: {}", wsmes).as_bytes())
+                        .write_all(format!("Invalid Json: {}", wsmes).as_bytes())
                         .await
                         .unwrap_or_default();
                 }

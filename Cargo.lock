@@ -583,21 +583,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "finnhub-rust-platform"
-version = "0.1.0"
-dependencies = [
- "dotenvy",
- "futures-channel",
- "futures-util",
- "sea-orm",
- "serde",
- "serde_json",
- "tokio",
- "tokio-tungstenite",
- "url",
-]
-
-[[package]]
 name = "flume"
 version = "0.10.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -653,6 +638,7 @@ checksum = "23342abe12aba583913b2e62f22225ff9c950774065e4bfb61a19cd9770fec40"
 dependencies = [
  "futures-channel",
  "futures-core",
+ "futures-executor",
  "futures-io",
  "futures-sink",
  "futures-task",
@@ -1494,6 +1480,22 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "rust-trading-platform"
+version = "0.1.0"
+dependencies = [
+ "dotenvy",
+ "futures",
+ "futures-channel",
+ "futures-util",
+ "sea-orm",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-tungstenite",
+ "url",
 ]
 
 [[package]]
