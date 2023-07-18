@@ -1,13 +1,10 @@
 use futures_util::{SinkExt, StreamExt};
 
-use sea_orm::{ActiveModelTrait, Database, Set};
 use serde::Deserialize;
+use sqlx::sqlite::SqlitePoolOptions;
 use std::str;
 use tokio::io::AsyncWriteExt;
 use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
-mod database;
-
-use database::trade;
 
 #[derive(Deserialize, Debug)]
 struct Data {
@@ -28,7 +25,11 @@ pub async fn run(
     connect_addr: String,
     database_url: String,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let db = Database::connect(database_url).await?;
+    let db_pool = SqlitePoolOptions::new()
+        .max_connections(5)
+        .connect(database_url.as_str())
+        .await?;
+
     let mut url = url::Url::parse(&connect_addr)?;
 
     let (ws_stream, _) = connect_async(&url).await?;
@@ -73,14 +74,22 @@ pub async fn run(
                         return;
                     }
                     for data in wsmes.data.iter() {
-                        let trade = trade::ActiveModel {
-                            price: Set(data.p),
-                            security: Set(data.s.clone()),
-                            timestamp: Set(data.t / 1000.),
-                            value: Set(data.v),
-                            ..Default::default()
-                        };
-                        trade.save(&db).await.unwrap_or_default();
+                        if let Err(e) = sqlx::query(
+                            "INSERT INTO trade (price, security, timestamp, volume)
+                        VALUES (?, ?, ?, ?);",
+                        )
+                        .bind(data.p)
+                        .bind(&data.s)
+                        .bind(data.t)
+                        .bind(data.v)
+                        .execute(&db_pool)
+                        .await
+                        {
+                            tokio::io::stdout()
+                                .write_all(format!("Error while inserting data: {e}").as_bytes())
+                                .await
+                                .unwrap_or_default();
+                        }
                     }
                 } else {
                     tokio::io::stdout()
