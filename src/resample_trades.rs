@@ -1,23 +1,19 @@
-use crate::SECURITIES;
+use crate::{RESAMPLE_FREQUENCY, SECURITIES};
 
 use futures::{future::join_all, TryStreamExt};
 use sqlx::Row;
 use tokio::time::{interval, sleep, Duration};
 
 pub async fn resample_trades(db_pool: &sqlx::SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
-    // Configurations
     // Maximum update frequency in milliseconds
     let mut interval = interval(Duration::from_millis(10));
-
-    // Resample frequency in milliseconds
-    let frequency = 100;
 
     // Past recheck leap in milliseconds
     // This is the amount of time in milliseconds that the resampler will
     // recheck for wrong data in the past
     // this is usefull because sometimes, the websocket connection will
     // give really out of order
-    let past_recheck_leap = std::cmp::max(2 * frequency, 2000);
+    let past_recheck_leap = std::cmp::max(2 * RESAMPLE_FREQUENCY, 2000);
 
     loop {
         let mut tasks = Vec::new();
@@ -31,7 +27,8 @@ pub async fn resample_trades(db_pool: &sqlx::SqlitePool) -> Result<(), Box<dyn s
 
                 let Ok(max_timestamp) = max_timestamp else {return};
 
-                let max_timestamp = max_timestamp.0.div_euclid(frequency) * frequency;
+                let max_timestamp =
+                    max_timestamp.0.div_euclid(RESAMPLE_FREQUENCY) * RESAMPLE_FREQUENCY;
 
                 //println!("max {}", max_timestamp);
 
@@ -57,7 +54,7 @@ pub async fn resample_trades(db_pool: &sqlx::SqlitePool) -> Result<(), Box<dyn s
             )
             GROUP BY rstimestamp ORDER BY timestamp ASC
         ) LIMIT 0,100"#,
-                    frequency = frequency
+                    frequency = RESAMPLE_FREQUENCY
                 );
                 let mut rows = sqlx::query(query.as_str())
                     .bind(max_timestamp)
@@ -74,7 +71,7 @@ pub async fn resample_trades(db_pool: &sqlx::SqlitePool) -> Result<(), Box<dyn s
                     // Fill time series gaps with the previous value
                     if let Some(mut prev_timestamp) = prev_timestamp {
                         while prev_timestamp < timestamp {
-                            prev_timestamp += frequency;
+                            prev_timestamp += RESAMPLE_FREQUENCY;
 
                             while sqlx::query(
                                 "INSERT INTO resampled_trade (price, security, timestamp)

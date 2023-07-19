@@ -6,7 +6,11 @@ mod resample_trades;
 use get_trades::get_trades;
 use resample_trades::resample_trades;
 
+// Securities to subscribe to
 const SECURITIES: [&str; 2] = ["BINANCE:BTCUSDT", "AAPL"];
+
+// Resample frequency in milliseconds
+const RESAMPLE_FREQUENCY: i64 = 100;
 
 pub async fn run(
     connect_addr: String,
