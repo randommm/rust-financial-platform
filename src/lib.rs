@@ -6,7 +6,7 @@ mod resample_trades;
 use get_trades::get_trades;
 use resample_trades::resample_trades;
 
-const SECURITIES: [&str; 2] = ["BINANCE:BTCUSDT", "IC MARKETS:1"];
+const SECURITIES: [&str; 2] = ["BINANCE:BTCUSDT", "AAPL"];
 
 pub async fn run(
     connect_addr: String,
