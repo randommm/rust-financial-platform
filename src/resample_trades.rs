@@ -2,7 +2,10 @@ use crate::{RESAMPLE_FREQUENCY, SECURITIES};
 
 use futures::{future::join_all, TryStreamExt};
 use sqlx::Row;
-use tokio::time::{interval, sleep, Duration};
+use tokio::{
+    io::AsyncWriteExt,
+    time::{interval, sleep, Duration},
+};
 
 pub async fn resample_trades(db_pool: &sqlx::SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
     // Maximum update frequency in milliseconds
@@ -20,7 +23,7 @@ pub async fn resample_trades(db_pool: &sqlx::SqlitePool) -> Result<(), Box<dyn s
         for security in SECURITIES {
             tasks.push(async move {
                 let max_timestamp: Result<(i64,), _> =
-                    sqlx::query_as(r#"SELECT MAX(timestamp) FROM trade WHERE security = ?;"#)
+                    sqlx::query_as(r#"SELECT MAX(timestamp) FROM trades_raw WHERE security = ?;"#)
                         .bind(security)
                         .fetch_one(db_pool)
                         .await;
@@ -33,7 +36,7 @@ pub async fn resample_trades(db_pool: &sqlx::SqlitePool) -> Result<(), Box<dyn s
                 //println!("max {}", max_timestamp);
 
                 let min_timestamp: (i64,) = sqlx::query_as(
-                    r#"SELECT MAX(timestamp) FROM resampled_trade WHERE security = ?;"#,
+                    r#"SELECT MAX(timestamp) FROM trades_resampled WHERE security = ?;"#,
                 )
                 .bind(security)
                 .fetch_one(db_pool)
@@ -48,7 +51,7 @@ pub async fn resample_trades(db_pool: &sqlx::SqlitePool) -> Result<(), Box<dyn s
                     r#"SELECT rstimestamp as timestamp, price FROM (
             SELECT rstimestamp, max(timestamp), price FROM (
                 SELECT price, (timestamp/{frequency})*{frequency} as rstimestamp, volume, timestamp
-                FROM trade
+                FROM trades_raw
                 WHERE timestamp <= ? AND timestamp > ? AND
                 security = ?
             )
@@ -73,8 +76,8 @@ pub async fn resample_trades(db_pool: &sqlx::SqlitePool) -> Result<(), Box<dyn s
                         while prev_timestamp < timestamp {
                             prev_timestamp += RESAMPLE_FREQUENCY;
 
-                            while sqlx::query(
-                                "INSERT INTO resampled_trade (price, security, timestamp)
+                            while let Err(e) = sqlx::query(
+                                "INSERT INTO trades_resampled (price, security, timestamp)
                     VALUES (?, ?, ?)
                     ON CONFLICT (security, timestamp) DO UPDATE SET price = EXCLUDED.price;
                     ;",
@@ -84,17 +87,23 @@ pub async fn resample_trades(db_pool: &sqlx::SqlitePool) -> Result<(), Box<dyn s
                             .bind(prev_timestamp)
                             .execute(db_pool)
                             .await
-                            .is_err()
+
                             {
-                                println!("Error while inserting data");
+                                tokio::io::stdout()
+                                    .write_all(
+                                        format!("Error while inserting data into trades_resampled table: {e}")
+                                            .as_bytes(),
+                                    )
+                                    .await
+                                    .unwrap_or_default();
                                 sleep(Duration::from_millis(50)).await;
                             }
                         }
                     }
                     prev_timestamp = Some(timestamp);
 
-                    while sqlx::query(
-                        "INSERT INTO resampled_trade (price, security, timestamp)
+                    while let Err(e) = sqlx::query(
+                        "INSERT INTO trades_resampled (price, security, timestamp)
                 VALUES (?, ?, ?)
                 ON CONFLICT (security, timestamp) DO UPDATE SET price = EXCLUDED.price;
                 ;",
@@ -104,9 +113,14 @@ pub async fn resample_trades(db_pool: &sqlx::SqlitePool) -> Result<(), Box<dyn s
                     .bind(timestamp)
                     .execute(db_pool)
                     .await
-                    .is_err()
                     {
-                        println!("Error while inserting data");
+                        tokio::io::stdout()
+                            .write_all(
+                                format!("Error while inserting data into trades_resampled table: {e}")
+                                    .as_bytes(),
+                            )
+                            .await
+                            .unwrap_or_default();
                         sleep(Duration::from_millis(50)).await;
                     }
                 }

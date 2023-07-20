@@ -82,7 +82,7 @@ pub async fn get_trades(
                                 continue;
                             }
                             while let Err(e) = sqlx::query(
-                                "INSERT INTO trade (price, security, timestamp, volume)
+                                "INSERT INTO trades_raw (price, security, timestamp, volume)
                         VALUES (?, ?, ?, ?);",
                             )
                             .bind(data.p)
@@ -94,7 +94,10 @@ pub async fn get_trades(
                             {
                                 tokio::io::stdout()
                                     .write_all(
-                                        format!("Error while inserting data: {e}").as_bytes(),
+                                        format!(
+                                            "Error while inserting data into trades_raw table: {e}"
+                                        )
+                                        .as_bytes(),
                                     )
                                     .await
                                     .unwrap_or_default();
