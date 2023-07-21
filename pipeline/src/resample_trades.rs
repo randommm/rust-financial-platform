@@ -66,8 +66,7 @@ pub async fn resample_trades(db_pool: &sqlx::SqlitePool) -> Result<(), Box<dyn s
                     .fetch(db_pool);
 
                 let mut prev_timestamp: Option<i64> = None;
-                while let Some(row) = rows.try_next().await.unwrap() {
-                    // map the row into a user-defined domain type
+                while let Ok(Some(row)) = rows.try_next().await {
                     let Ok::<f64, _>(price) = row.try_get("price") else { continue };
                     let Ok::<i64, _>(timestamp) = row.try_get("timestamp") else { continue };
 
