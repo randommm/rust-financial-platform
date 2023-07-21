@@ -10,7 +10,7 @@ use resample_trades::resample_trades;
 const SECURITIES: [&str; 2] = ["BINANCE:BTCUSDT", "AAPL"];
 
 // Resample frequency in milliseconds
-const RESAMPLE_FREQUENCY: i64 = 100;
+const RESAMPLE_FREQUENCY: i64 = 1000;
 
 pub async fn run(
     connect_addr: String,

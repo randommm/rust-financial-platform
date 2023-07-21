@@ -27,6 +27,7 @@ pub struct ResampledTradesQuery {
     security: Option<String>,
     page: Option<i64>,
     per_page: Option<i64>,
+    frequency: Option<i64>,
     order: Option<String>,
     from: Option<i64>,
     to: Option<i64>,
@@ -57,6 +58,7 @@ pub async fn get_resampled_trades(
 ) -> Result<impl IntoResponse, AppError> {
     let page = query.page.unwrap_or(1);
     let per_page = query.per_page.unwrap_or(10);
+    let frequency = query.frequency.unwrap_or(1);
     let order = query.order.unwrap_or("a".to_owned());
     let from = query
         .from
@@ -84,6 +86,11 @@ pub async fn get_resampled_trades(
             .with_user_message("page must be greater than 0")
             .with_code(StatusCode::BAD_REQUEST));
     }
+    if frequency < 1 {
+        return Err(AppError::new("frequency must be greater than 0")
+            .with_user_message("frequency must be greater than 0")
+            .with_code(StatusCode::BAD_REQUEST));
+    }
     let order = if order == "a" {
         "ASC "
     } else if order == "d" {
@@ -97,12 +104,26 @@ pub async fn get_resampled_trades(
     let offset = (page - 1) * per_page;
 
     let sql_query = format!(
-        r#"SELECT price,timestamp FROM trades_resampled
-           WHERE security = ?
-           {} {}
-           ORDER BY timestamp {}
-           LIMIT {},{}"#,
-        from, to, order, offset, per_page
+        r#"
+        SELECT * FROM
+        (
+                SELECT
+                ROW_NUMBER() OVER (ORDER BY timestamp {order}) AS row_id,price,timestamp
+                FROM trades_resampled
+                WHERE security = ?
+                {from} {to}
+                ORDER BY timestamp {order}
+        ) as dtable
+        WHERE
+        (row_id - 1) % {frequency} = 0
+        LIMIT {offset},{per_page}
+        "#,
+        from = from,
+        to = to,
+        order = order,
+        offset = offset,
+        per_page = per_page,
+        frequency = frequency,
     );
     let mut rows = sqlx::query(&sql_query).bind(security).fetch(&db_pool);
 

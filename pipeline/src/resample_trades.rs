@@ -56,7 +56,7 @@ pub async fn resample_trades(db_pool: &sqlx::SqlitePool) -> Result<(), Box<dyn s
                 security = ?
             )
             GROUP BY rstimestamp ORDER BY timestamp ASC
-        ) LIMIT 0,100"#,
+            ) LIMIT 0,100"#,
                     frequency = RESAMPLE_FREQUENCY
                 );
                 let mut rows = sqlx::query(query.as_str())
