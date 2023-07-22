@@ -1,0 +1,145 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Real time financial data streaming",
+    "description": "Documentation for the [Real time financial data streaming and resampling with Rust](https://github.com/randommm/rust-trading-platform) API",
+    "contact": {
+      "email": "rtp@marcoinacio.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "0.1.0"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:7500"
+    }
+  ],
+  "tags": [
+    {
+      "name": "trades",
+      "description": "Trades"
+    }
+  ],
+  "paths": {
+    "/api/v1": {
+      "get": {
+        "tags": [
+          "trades"
+        ],
+        "summary": "get general information about the server",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/securities": {
+      "get": {
+        "tags": [
+          "trades"
+        ],
+        "summary": "list available securities",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/resampled_trades": {
+      "get": {
+        "tags": [
+          "trades"
+        ],
+        "summary": "get resampled trade prices for a security given a resampling frequency and other filters.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "security",
+            "schema": {
+              "type": "string",
+              "default": "AAPL"
+            },
+            "required": true,
+            "description": "Name of the security"
+          },
+          {
+            "in": "query",
+            "name": "frequency",
+            "schema": {
+              "type": "integer",
+              "default": 60,
+              "minimum": 1
+            },
+            "required": false,
+            "description": "Frequency to resample in seconds. e.g. 60 will get you the trade security price for every minute."
+          },
+          {
+            "in": "query",
+            "name": "per_page",
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "minimum": 1
+            },
+            "required": false,
+            "description": "Number of results per page. Defaults to 10. Must not be greater than 50."
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            },
+            "required": false,
+            "description": "Page id of the results. Defaults to 1, i.e., first page."
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "schema": {
+              "type": "string",
+              "default": "a"
+            },
+            "required": false,
+            "description": "Order to show the results; where \"a\" standands for anscending and \"d\" for descending. Default to \"a\"."
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "required": false,
+            "description": "Show results starting from this date (timestamp)."
+          },
+          {
+            "in": "query",
+            "name": "to",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "required": false,
+            "description": "Show results before this date (timestamp)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "If securities is not set or other parameters are invalid."
+          }
+        }
+      }
+    }
+  }
+}

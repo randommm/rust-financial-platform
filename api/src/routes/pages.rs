@@ -1,9 +1,8 @@
 use super::AppError;
 use axum::{
     extract::{Query, State},
-    http::StatusCode,
-    //response::{IntoResponse, Json},
-    response::IntoResponse,
+    http::{header::CONTENT_TYPE, StatusCode},
+    response::{Html, IntoResponse},
 };
 use axum_extra::response::ErasedJson;
 use futures::TryStreamExt;
@@ -151,8 +150,34 @@ pub async fn list_securities(
     Ok(ErasedJson::pretty(response))
 }
 
-pub async fn not_found() -> AppError {
+pub async fn not_found_json() -> AppError {
     AppError::new("Endpoint not found")
         .with_user_message("Endpoint not found")
         .with_code(StatusCode::NOT_FOUND)
+}
+
+pub async fn not_found_html() -> impl IntoResponse {
+    (
+        StatusCode::NOT_FOUND,
+        Html(
+            r#"<!doctype html>
+    <html>
+      <head>
+      </head>
+      <body>
+        Page not found. <a href="/docs">Check the API documentation</a>.
+      </body>
+    </html>"#,
+        ),
+    )
+        .into_response()
+}
+
+const SWAGGER_JSON: &str = include_str!("../assets/swagger.json");
+const DOCS_HTML: &str = include_str!("../assets/docs.html");
+pub async fn swagger_json() -> impl IntoResponse {
+    ([(CONTENT_TYPE, "application/json")], SWAGGER_JSON)
+}
+pub async fn api_docs() -> impl IntoResponse {
+    Html(DOCS_HTML)
 }

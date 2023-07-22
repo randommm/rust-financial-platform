@@ -16,9 +16,13 @@ pub async fn create_routes(db_pool: SqlitePool) -> Result<Router, String> {
         .route("/", get(pages::index))
         .route("/resampled_trades", get(pages::get_resampled_trades))
         .route("/securities", get(pages::list_securities))
-        .with_state(app_state.clone());
+        .with_state(app_state.clone())
+        .fallback(get(pages::not_found_json));
 
     Ok(Router::new()
         .nest("/api/v1", api)
-        .fallback(get(pages::not_found)))
+        .route("/api/v1/", get(pages::not_found_json))
+        .route("/docs", get(pages::api_docs))
+        .route("/docs/swagger.json", get(pages::swagger_json))
+        .fallback(get(pages::not_found_html)))
 }
