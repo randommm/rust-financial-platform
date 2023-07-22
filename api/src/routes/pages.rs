@@ -7,8 +7,7 @@ use axum::{
 use axum_extra::response::ErasedJson;
 use futures::TryStreamExt;
 use serde::{Deserialize, Serialize};
-use sqlx::{Row, SqlitePool};
-
+use sqlx::{PgPool, Row};
 #[derive(Serialize, Deserialize)]
 struct ResponseIndex {
     number_of_raw_trade_records_stored: i64,
@@ -32,7 +31,7 @@ pub struct ResampledTradesQuery {
     to: Option<i64>,
 }
 
-pub async fn index(State(db_pool): State<SqlitePool>) -> Result<impl IntoResponse, AppError> {
+pub async fn index(State(db_pool): State<PgPool>) -> Result<impl IntoResponse, AppError> {
     let x: (i64,) = sqlx::query_as(r#"SELECT COUNT(*) FROM trades_raw"#)
         .fetch_one(&db_pool)
         .await?;
@@ -52,7 +51,7 @@ pub async fn index(State(db_pool): State<SqlitePool>) -> Result<impl IntoRespons
 }
 
 pub async fn get_resampled_trades(
-    State(db_pool): State<SqlitePool>,
+    State(db_pool): State<PgPool>,
     Query(query): Query<ResampledTradesQuery>,
 ) -> Result<impl IntoResponse, AppError> {
     let page = query.page.unwrap_or(1);
@@ -109,13 +108,13 @@ pub async fn get_resampled_trades(
                 SELECT
                 ROW_NUMBER() OVER (ORDER BY timestamp {order}) AS row_id,price,timestamp
                 FROM trades_resampled
-                WHERE security = ?
+                WHERE security = $1
                 {from} {to}
                 ORDER BY timestamp {order}
         ) as dtable
         WHERE
         (row_id - 1) % {frequency} = 0
-        LIMIT {offset},{per_page}
+        LIMIT {per_page} OFFSET {offset}
         "#,
         from = from,
         to = to,
@@ -136,9 +135,7 @@ pub async fn get_resampled_trades(
     Ok(ErasedJson::pretty(response))
 }
 
-pub async fn list_securities(
-    State(db_pool): State<SqlitePool>,
-) -> Result<impl IntoResponse, AppError> {
+pub async fn list_securities(State(db_pool): State<PgPool>) -> Result<impl IntoResponse, AppError> {
     let sql_query = "SELECT DISTINCT(security) FROM trades_resampled";
     let mut rows = sqlx::query(sql_query).fetch(&db_pool);
     let mut response = Vec::new();

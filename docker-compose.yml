@@ -1,0 +1,54 @@
+services:
+    rust-trading-platform-api:
+        build:
+            context: .
+        command: cargo run --release --bin rust-trading-platform-api
+        ports:
+            - "127.0.0.1:7500:7500"
+        restart: always
+        volumes:
+            - type: bind
+              source: ./.env
+              target: /opt/.env
+              read_only: true
+        depends_on:
+            db-migrate:
+                condition: service_completed_successfully
+    rust-trading-platform-pipeline:
+        build:
+            context: .
+        command: cargo run --release --bin rust-trading-platform-pipeline
+        restart: always
+        volumes:
+            - type: bind
+              source: ./.env
+              target: /opt/.env
+              read_only: true
+        depends_on:
+            db-migrate:
+                condition: service_completed_successfully
+    db-migrate:
+        build:
+            context: .
+        command: bash -c 'sqlx database create && sqlx migrate run'
+        volumes:
+            - type: bind
+              source: ./.env
+              target: /opt/.env
+              read_only: true
+        depends_on:
+            postgres:
+                condition: service_started
+    postgres:
+        image: postgres
+        restart: always
+        env_file:
+            - .env
+    pgadmin:
+        container_name: pgadmin4_container
+        image: dpage/pgadmin4
+        restart: always
+        env_file:
+            - .env
+        ports:
+            - "127.0.0.1:7510:80"

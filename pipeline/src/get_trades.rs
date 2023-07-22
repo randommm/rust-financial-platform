@@ -2,6 +2,7 @@ use crate::SECURITIES;
 
 use futures_util::{SinkExt, StreamExt};
 use serde::Deserialize;
+use sqlx::PgPool;
 use std::str;
 use tokio::io::AsyncWriteExt;
 use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
@@ -23,7 +24,7 @@ struct WSMessage {
 
 pub async fn get_trades(
     connect_addr: String,
-    db_pool: &sqlx::SqlitePool,
+    db_pool: &PgPool,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(30));
     loop {
@@ -83,7 +84,7 @@ pub async fn get_trades(
                             }
                             while let Err(e) = sqlx::query(
                                 "INSERT INTO trades_raw (price, security, timestamp, volume)
-                        VALUES (?, ?, ?, ?);",
+                            VALUES ($1, $2, $3, $4);",
                             )
                             .bind(data.p)
                             .bind(&data.s)

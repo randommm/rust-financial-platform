@@ -1,8 +1,8 @@
 mod routes;
-use sqlx::sqlite::SqlitePoolOptions;
+use sqlx::postgres::PgPoolOptions;
 
 pub async fn run(database_url: String) -> Result<(), String> {
-    let db_pool = SqlitePoolOptions::new()
+    let db_pool = PgPoolOptions::new()
         .max_connections(5)
         .connect(database_url.as_str())
         .await

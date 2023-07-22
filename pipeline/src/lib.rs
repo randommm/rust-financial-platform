@@ -1,5 +1,5 @@
 use futures_util::{future, pin_mut};
-use sqlx::sqlite::SqlitePoolOptions;
+use sqlx::postgres::PgPoolOptions;
 
 mod get_trades;
 mod resample_trades;
@@ -16,7 +16,7 @@ pub async fn run(
     connect_addr: String,
     database_url: String,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let db_pool = SqlitePoolOptions::new()
+    let db_pool = PgPoolOptions::new()
         .max_connections(5)
         .connect(database_url.as_str())
         .await?;
