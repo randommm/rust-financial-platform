@@ -25,7 +25,7 @@ pub struct ResampledTradesQuery {
     security: Option<String>,
     page: Option<i64>,
     per_page: Option<i64>,
-    frequency: Option<i64>,
+    resolution: Option<i64>,
     order: Option<String>,
     from: Option<i64>,
     to: Option<i64>,
@@ -56,7 +56,7 @@ pub async fn get_resampled_trades(
 ) -> Result<impl IntoResponse, AppError> {
     let page = query.page.unwrap_or(1);
     let per_page = query.per_page.unwrap_or(10);
-    let frequency = query.frequency.unwrap_or(1);
+    let resolution = query.resolution.unwrap_or(1);
     let order = query.order.unwrap_or("a".to_owned());
     let from = query
         .from
@@ -84,9 +84,9 @@ pub async fn get_resampled_trades(
             .with_user_message("page must be greater than 0")
             .with_code(StatusCode::BAD_REQUEST));
     }
-    if frequency < 1 {
-        return Err(AppError::new("frequency must be greater than 0")
-            .with_user_message("frequency must be greater than 0")
+    if resolution < 1 {
+        return Err(AppError::new("resolution must be greater than 0")
+            .with_user_message("resolution must be greater than 0")
             .with_code(StatusCode::BAD_REQUEST));
     }
     let order = if order == "a" {
@@ -113,7 +113,7 @@ pub async fn get_resampled_trades(
                 ORDER BY timestamp {order}
         ) as dtable
         WHERE
-        (row_id - 1) % {frequency} = 0
+        (row_id - 1) % {resolution} = 0
         LIMIT {per_page} OFFSET {offset}
         "#,
         from = from,
@@ -121,7 +121,7 @@ pub async fn get_resampled_trades(
         order = order,
         offset = offset,
         per_page = per_page,
-        frequency = frequency,
+        resolution = resolution,
     );
     let mut rows = sqlx::query(&sql_query).bind(security).fetch(&db_pool);
 

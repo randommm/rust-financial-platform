@@ -55,7 +55,7 @@
         "tags": [
           "trades"
         ],
-        "summary": "get resampled trade prices for a security given a resampling frequency and other filters.",
+        "summary": "get resampled trade prices for a security given a resampling resolution and other filters.",
         "parameters": [
           {
             "in": "query",
@@ -69,14 +69,14 @@
           },
           {
             "in": "query",
-            "name": "frequency",
+            "name": "resolution",
             "schema": {
               "type": "integer",
               "default": 60,
               "minimum": 1
             },
             "required": false,
-            "description": "Frequency to resample in seconds. e.g. 60 will get you the trade security price for every minute."
+            "description": "Resample resolution in seconds; e.g. 60 will get you the trade security price for every minute."
           },
           {
             "in": "query",

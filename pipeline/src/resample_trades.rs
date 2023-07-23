@@ -1,11 +1,11 @@
-use crate::{RESAMPLE_FREQUENCY, SECURITIES};
+use crate::{RESAMPLE_RESOLUTION, SECURITIES};
 
 use futures::{future::join_all, TryStreamExt};
 use sqlx::{PgPool, Row};
 use tokio::time::{interval, sleep, Duration};
 
 pub async fn resample_trades(db_pool: &PgPool) -> Result<(), Box<dyn std::error::Error>> {
-    // Maximum update frequency in milliseconds
+    // Maximum update resolution in milliseconds
     let mut interval = interval(Duration::from_millis(10));
 
     // Past recheck leap in milliseconds
@@ -13,7 +13,7 @@ pub async fn resample_trades(db_pool: &PgPool) -> Result<(), Box<dyn std::error:
     // recheck for wrong data in the past
     // this is usefull because sometimes, the websocket connection will
     // give really out of order
-    let past_recheck_leap = std::cmp::max(2 * RESAMPLE_FREQUENCY, 2000);
+    let past_recheck_leap = std::cmp::max(2 * RESAMPLE_RESOLUTION, 2000);
 
     loop {
         let mut tasks = Vec::new();
@@ -28,7 +28,7 @@ pub async fn resample_trades(db_pool: &PgPool) -> Result<(), Box<dyn std::error:
                 let Ok(max_timestamp) = max_timestamp else {return};
 
                 let max_timestamp =
-                    max_timestamp.0.div_euclid(RESAMPLE_FREQUENCY) * RESAMPLE_FREQUENCY;
+                    max_timestamp.0.div_euclid(RESAMPLE_RESOLUTION) * RESAMPLE_RESOLUTION;
 
                 let min_timestamp: (i64,) = sqlx::query_as(
                     "SELECT MAX(timestamp) FROM trades_resampled WHERE security = $1;",
@@ -48,14 +48,14 @@ SELECT sq2.rstimestamp as timestamp, sq2.price as price FROM (
         ORDER BY sq1.timestamp DESC) AS row_id,
     sq1.rstimestamp as rstimestamp, sq1.price as price FROM (
             SELECT price,
-            (timestamp/{frequency})*{frequency}+{frequency} as rstimestamp,
+            (timestamp/{resolution})*{resolution}+{resolution} as rstimestamp,
             volume, timestamp
             FROM trades_raw
             WHERE timestamp <= $1 AND timestamp > $2 AND
             security = $3
     ) as sq1
 ) as sq2 WHERE sq2.row_id = 1",
-                    frequency = RESAMPLE_FREQUENCY
+                    resolution = RESAMPLE_RESOLUTION
                 );
                 let mut rows = sqlx::query(query.as_str())
                     .bind(max_timestamp)
@@ -71,7 +71,7 @@ SELECT sq2.rstimestamp as timestamp, sq2.price as price FROM (
                     // Fill time series gaps with the previous value
                     if let Some(mut prev_timestamp) = prev_timestamp {
                         while prev_timestamp < timestamp {
-                            prev_timestamp += RESAMPLE_FREQUENCY;
+                            prev_timestamp += RESAMPLE_RESOLUTION;
 
                             while let Err(err) = sqlx::query(
                                 "INSERT INTO trades_resampled (price, security, timestamp)
