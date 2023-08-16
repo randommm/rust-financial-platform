@@ -7,7 +7,6 @@ This crates is composed of two tasks continuously executing in parallel:
 
 Additionally an API to query the data is provided.
 
-
 ## Usage instructions without Docker compose
 
 * Create a file called `.env` in the root directory (same folder that `LICENSE` is) with Finnhub API token, the Postgresql database url:
@@ -18,7 +17,7 @@ Additionally an API to query the data is provided.
       PGADMIN_DEFAULT_EMAIL=your@email.com
       PGADMIN_DEFAULT_PASSWORD=your_password_for_postgres_webadmin_here
 
-* Run `docker-compose up`.
+* Run `docker compose up`.
 
 * The API should became available at http://127.0.0.1:7500 while the API documentation will be at http://127.0.0.1:7500/docs and Postgres webadmin will be at http://127.0.0.1:7510
 
