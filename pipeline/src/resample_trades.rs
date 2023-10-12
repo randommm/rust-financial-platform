@@ -1,6 +1,6 @@
 use crate::{RESAMPLE_RESOLUTION, SECURITIES};
 
-use futures::{future::join_all, TryStreamExt};
+use futures_util::{future::join_all, stream::TryStreamExt};
 use sqlx::{PgPool, Row};
 use tokio::time::{interval, sleep, Duration};
 
@@ -25,7 +25,9 @@ pub async fn resample_trades(db_pool: &PgPool) -> Result<(), Box<dyn std::error:
                         .fetch_one(db_pool)
                         .await;
 
-                let Ok(max_timestamp) = max_timestamp else {return};
+                let Ok(max_timestamp) = max_timestamp else {
+                    return;
+                };
 
                 let max_timestamp =
                     max_timestamp.0.div_euclid(RESAMPLE_RESOLUTION) * RESAMPLE_RESOLUTION;
@@ -65,8 +67,12 @@ SELECT sq2.rstimestamp as timestamp, sq2.price as price FROM (
 
                 let mut prev_timestamp: Option<i64> = None;
                 while let Some(row) = rows.try_next().await.unwrap() {
-                    let Ok::<f64, _>(price) = row.try_get("price") else { continue };
-                    let Ok::<i64, _>(timestamp) = row.try_get("timestamp") else { continue };
+                    let Ok::<f64, _>(price) = row.try_get("price") else {
+                        continue;
+                    };
+                    let Ok::<i64, _>(timestamp) = row.try_get("timestamp") else {
+                        continue;
+                    };
 
                     // Fill time series gaps with the previous value
                     if let Some(mut prev_timestamp) = prev_timestamp {

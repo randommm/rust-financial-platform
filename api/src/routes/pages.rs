@@ -5,7 +5,7 @@ use axum::{
     response::{Html, IntoResponse},
 };
 use axum_extra::response::ErasedJson;
-use futures::TryStreamExt;
+use futures_lite::stream::StreamExt;
 use serde::{Deserialize, Serialize};
 use sqlx::{PgPool, Row};
 #[derive(Serialize, Deserialize)]
