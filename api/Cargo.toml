@@ -4,10 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = { version = "0.6", features = ["headers", "macros"] }
-axum-extra = { version = "0.8", features = ["erased-json"] }
+axum = { version = "0.7", features = ["macros"] }
+axum-extra = { version = "0.9", features = ["erased-json"] }
 tokio = { version = "1.13", features = ["full"] }
-futures-lite = "1"
+futures-lite = "2"
 dotenvy = "0.15"
 sqlx = { version = "0.7", features = [
     "postgres",

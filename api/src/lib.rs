@@ -1,5 +1,6 @@
 mod routes;
 use sqlx::postgres::PgPoolOptions;
+use tokio::net::TcpListener;
 
 pub async fn run(database_url: String) -> Result<(), String> {
     let db_pool = PgPoolOptions::new()
@@ -9,11 +10,12 @@ pub async fn run(database_url: String) -> Result<(), String> {
         .map_err(|e| format!("DB connection failed: {}", e))?;
 
     let app = routes::create_routes(db_pool).await?;
-    let bind_addr = &"0.0.0.0:7500"
-        .parse()
-        .map_err(|e| format!("Failed to parse address: {}", e))?;
-    axum::Server::bind(bind_addr)
-        .serve(app.into_make_service())
+    let bind_addr = &"0.0.0.0:7500";
+    let listener = TcpListener::bind(bind_addr)
         .await
-        .map_err(|e| format!("Server error: {}", e))
+        .map_err(|e| format!("Failed to parse address: {}", e))?;
+    axum::serve(listener, app.into_make_service())
+        .await
+        .map_err(|e| format!("Server error: {}", e))?;
+    Ok(())
 }
