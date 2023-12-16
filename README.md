@@ -7,7 +7,7 @@ This crates is composed of two tasks continuously executing in parallel:
 
 Additionally an API to query the data is provided.
 
-## Usage instructions without Docker compose
+## Usage instructions with Docker compose
 
 * Create a file called `.env` in the root directory (same folder that `LICENSE` is) with Finnhub API token, the Postgresql database url:
 
