@@ -41,13 +41,13 @@ spec:
             - name: PGADMIN_DEFAULT_EMAIL
               valueFrom:
                 secretKeyRef:
-                  name: pg-rtapp-conf
+                  name: pg-rfp-app-conf
                   key: PGADMIN_DEFAULT_EMAIL
                   optional: false
             - name: PGADMIN_DEFAULT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: pg-rtapp-conf
+                  name: pg-rfp-app-conf
                   key: PGADMIN_DEFAULT_PASSWORD
                   optional: false
           livenessProbe:

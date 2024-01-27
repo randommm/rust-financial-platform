@@ -1,5 +1,5 @@
 use dotenvy::var;
-use rust_trading_platform_pipeline::run;
+use rust_financial_platform_pipeline::run;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

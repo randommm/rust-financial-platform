@@ -1,6 +1,6 @@
 Real time financial data streaming and resampling with Rust.
 
-This crates is composed of two tasks continuously executing in parallel:
+This crate is composed of two tasks continuously executing in parallel:
 
 * Obtains Finnhub's realtime data and saves it to a PostgreSQL database in the table `trades`.
 * Resamples data from `trades` into a predefined interval (by default, 100 milliseconds) and saves it on the table `resampled_trades`. Resampling is done by taking the lastest trade that happened prior to that instant.
@@ -9,7 +9,7 @@ Additionally an API to query the data is provided.
 
 ## Usage instructions with Kubernetes
 
-See k8s folder: https://github.com/randommm/rust-trading-platform/tree/master/k8s.
+See k8s folder: https://github.com/randommm/rust-financial-platform/tree/master/k8s.
 
 ## Usage instructions with Docker compose
 
@@ -17,7 +17,7 @@ See k8s folder: https://github.com/randommm/rust-trading-platform/tree/master/k8
 
       FINNHUB_TOKEN=your_token_here
       POSTGRES_PASSWORD=your_postgresql_password_here
-      DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD}@postgres/tplatform
+      DATABASE_URL=postgres://postgres:${POSTGRES_PASSWORD}@postgres/rfplatform
       PGADMIN_DEFAULT_EMAIL=your@email.com
       PGADMIN_DEFAULT_PASSWORD=your_password_for_postgres_webadmin_here
 
@@ -33,6 +33,6 @@ See k8s folder: https://github.com/randommm/rust-trading-platform/tree/master/k8
 
 * Create the database with: `cargo install sqlx-cli && sqlx database create && sqlx migrate run`
 
-* Start the data pipeline with `cargo run --bin rust-trading-platform-pipeline`
+* Start the data pipeline with `cargo run --bin rust-financial-platform-pipeline`
 
-* Start the API with `cargo run --bin rust-trading-platform-api`
+* Start the API with `cargo run --bin rust-financial-platform-api`

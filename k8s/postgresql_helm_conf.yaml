@@ -3,7 +3,7 @@ auth:
   postgresPassword: "root_user_password_to_be_used"
   username: "postgres"
   password: "pg_password_here"
-  database: "tplatform"
+  database: "rfplatform"
 primary:
   persistence:
     enabled: true

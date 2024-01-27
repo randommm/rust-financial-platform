@@ -1,8 +1,8 @@
 services:
-    rust-trading-platform-api:
+    rust-financial-platform-api:
         build:
             context: .
-        command: cargo run --release --bin rust-trading-platform-api
+        command: cargo run --release --bin rust-financial-platform-api
         ports:
             - "127.0.0.1:7500:7500"
         restart: always
@@ -14,10 +14,10 @@ services:
         depends_on:
             db-migrate:
                 condition: service_completed_successfully
-    rust-trading-platform-pipeline:
+    rust-financial-platform-pipeline:
         build:
             context: .
-        command: cargo run --release --bin rust-trading-platform-pipeline
+        command: cargo run --release --bin rust-financial-platform-pipeline
         restart: always
         volumes:
             - type: bind

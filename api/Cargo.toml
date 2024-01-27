@@ -1,5 +1,5 @@
 [package]
-name = "rust-trading-platform-api"
+name = "rust-financial-platform-api"
 version = "0.1.0"
 edition = "2021"
 

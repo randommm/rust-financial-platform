@@ -1226,7 +1226,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rust-trading-platform-api"
+name = "rust-financial-platform-api"
 version = "0.1.0"
 dependencies = [
  "axum",
@@ -1241,7 +1241,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rust-trading-platform-pipeline"
+name = "rust-financial-platform-pipeline"
 version = "0.1.0"
 dependencies = [
  "dotenvy",

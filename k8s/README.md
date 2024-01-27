@@ -10,9 +10,9 @@ Alternatively, you can start a cluster on your computer using minikube. In this 
 
 Now to configure Kubernetes to run the app on Nginx, first build the Docker image using the provided Dockerfile:
 
-`docker build . -t rust-trading-platform:v1`
+`docker build . -t rust-financial-platform:v1`
 
-if you a name other than "rust-trading-platform:v1" in the command above, then update the line "image: rust-trading-platform:v1" in rtapp_conf.yaml with the chosen name.
+if you a name other than "rust-financial-platform:v1" in the command above, then update the line "image: rust-financial-platform:v1" in rfp-app_conf.yaml with the chosen name.
 
 The image should be available on the Docker registry for kubernetes to pull, or as an alternative, you can enter the minikube Docker context by running
 
@@ -20,7 +20,7 @@ The image should be available on the Docker registry for kubernetes to pull, or 
 
 and build then image there
 
-`docker build . -t rust-trading-platform:v1`
+`docker build . -t rust-financial-platform:v1`
 
 You can now go the section for database that you wish to use to deploy your app.
 
@@ -29,7 +29,7 @@ We will also need to an Ingress Controller, see https://kubernetes.io/docs/conce
 Deploy using PostgreSQL
 ========================
 
-Edit the username and password at postgres_helm_conf.yaml and rtapp_secrets_conf.yaml
+Edit the username and password at postgres_helm_conf.yaml and rfp-app_secrets_conf.yaml
 
 Then install Postgres on Kubernetes using Helm:
 
@@ -41,9 +41,9 @@ Then install Postgres on Kubernetes using Helm:
 
 And run:
 
-`kubectl apply -f rtapp_secrets_conf.yaml`
+`kubectl apply -f rfp-app_secrets_conf.yaml`
 
-`kubectl apply -f rtapp_conf.yaml`
+`kubectl apply -f rfp-app_conf.yaml`
 
 `kubectl apply -f pgadmin_conf.yaml`
 
@@ -77,7 +77,7 @@ Then you can
         solvers:
         - http01:
             ingress:
-              name: rtapp-ingress
+              name: rfp-app-ingress
 
 
 An then add the cert-manager.io annotation plus the tls spec to your ingress policy:
@@ -85,7 +85,7 @@ An then add the cert-manager.io annotation plus the tls spec to your ingress pol
     apiVersion: networking.k8s.io/v1
     kind: Ingress
     metadata:
-      name: rtapp-ingress
+      name: rfp-app-ingress
       annotations:
         cert-manager.io/cluster-issuer: letsencrypt-prod
     spec:
@@ -101,7 +101,7 @@ An then add the cert-manager.io annotation plus the tls spec to your ingress pol
                 pathType: Prefix
                 backend:
                   service:
-                    name: rtapp-service
+                    name: rfp-app-service
                     port:
                       number: 80
 

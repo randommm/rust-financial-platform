@@ -1,5 +1,5 @@
 [package]
-name = "rust-trading-platform-pipeline"
+name = "rust-financial-platform-pipeline"
 version = "0.1.0"
 edition = "2021"
 

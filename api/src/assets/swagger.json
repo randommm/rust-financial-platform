@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Real time financial data streaming",
-    "description": "Documentation for the [Real time financial data streaming and resampling with Rust](https://github.com/randommm/rust-trading-platform) API",
+    "description": "Documentation for the [Real time financial data streaming and resampling with Rust](https://github.com/randommm/rust-financial-platform) API",
     "contact": {
       "email": "rtp@marcoinacio.com"
     },

@@ -28,6 +28,6 @@ COPY pipeline/src pipeline/src
 
 RUN cargo build --release --locked
 
-CMD cargo run --release --locked --bin rust-trading-platform-pipeline
+CMD cargo run --release --locked --bin rust-financial-platform-pipeline
 
 COPY migrations migrations

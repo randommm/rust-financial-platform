@@ -1,5 +1,5 @@
 use dotenvy::var;
-use rust_trading_platform_api::run;
+use rust_financial_platform_api::run;
 
 #[tokio::main]
 async fn main() -> Result<(), String> {

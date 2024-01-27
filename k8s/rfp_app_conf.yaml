@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rtapp-deployment
+  name: rfp-app-deployment
   labels:
-    app: rtapp
+    app: rfp-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: rtapp
+      app: rfp-app
   template:
     metadata:
       labels:
-        app: rtapp
+        app: rfp-app
     spec:
       initContainers:
-        - name: rust-trading-platform-migrate
-          image: rust-trading-platform:v1
+        - name: rust-financial-platform-migrate
+          image: rust-financial-platform:v1
           command: ["/bin/bash"]
           args:
             - -c
@@ -26,67 +26,67 @@ spec:
             - name: FINNHUB_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: pg-rtapp-conf
+                  name: pg-rfp-app-conf
                   key: FINNHUB_TOKEN
                   optional: false
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: pg-rtapp-conf
+                  name: pg-rfp-app-conf
                   key: DATABASE_URL
                   optional: false
       containers:
-        - name: rust-trading-platform-api
-          image: rust-trading-platform:v1
+        - name: rust-financial-platform-api
+          image: rust-financial-platform:v1
           ports:
             - containerPort: 7500
           command: ["/bin/bash"]
           args:
             - -c
             - >-
-              cargo run --release --bin rust-trading-platform-api
+              cargo run --release --bin rust-financial-platform-api
           env:
             - name: FINNHUB_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: pg-rtapp-conf
+                  name: pg-rfp-app-conf
                   key: FINNHUB_TOKEN
                   optional: false
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: pg-rtapp-conf
+                  name: pg-rfp-app-conf
                   key: DATABASE_URL
                   optional: false
-        - name: rust-trading-platform-pipeline
-          image: rust-trading-platform:v1
+        - name: rust-financial-platform-pipeline
+          image: rust-financial-platform:v1
           command: ["/bin/bash"]
           args:
             - -c
             - >-
-              cargo run --release --bin rust-trading-platform-pipeline
+              cargo run --release --bin rust-financial-platform-pipeline
           env:
             - name: FINNHUB_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: pg-rtapp-conf
+                  name: pg-rfp-app-conf
                   key: FINNHUB_TOKEN
                   optional: false
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: pg-rtapp-conf
+                  name: pg-rfp-app-conf
                   key: DATABASE_URL
                   optional: false
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: rtapp-service
+  name: rfp-app-service
 spec:
   type: ClusterIP
   selector:
-    app: rtapp
+    app: rfp-app
   ports:
     - name: http
       protocol: TCP
@@ -96,7 +96,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: rtapp-ingress
+  name: rfp-app-ingress
 spec:
   rules:
     - host: mydomain.com
@@ -106,6 +106,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: rtapp-service
+                name: rfp-app-service
                 port:
                   number: 80
