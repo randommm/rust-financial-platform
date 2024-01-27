@@ -7,6 +7,10 @@ This crates is composed of two tasks continuously executing in parallel:
 
 Additionally an API to query the data is provided.
 
+## Usage instructions with Kubernetes
+
+See k8s folder: https://github.com/randommm/rust-trading-platform/tree/master/k8s.
+
 ## Usage instructions with Docker compose
 
 * Create a file called `.env` in the root directory (same folder that `LICENSE` is) with Finnhub API token, the Postgresql database url:
