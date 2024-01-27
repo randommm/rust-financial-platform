@@ -1,0 +1,111 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rtapp-deployment
+  labels:
+    app: rtapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rtapp
+  template:
+    metadata:
+      labels:
+        app: rtapp
+    spec:
+      initContainers:
+        - name: rust-trading-platform-migrate
+          image: rust-trading-platform:v1
+          command: ["/bin/bash"]
+          args:
+            - -c
+            - >-
+              sqlx database create && sqlx migrate run
+          env:
+            - name: FINNHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: pg-rtapp-conf
+                  key: FINNHUB_TOKEN
+                  optional: false
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: pg-rtapp-conf
+                  key: DATABASE_URL
+                  optional: false
+      containers:
+        - name: rust-trading-platform-api
+          image: rust-trading-platform:v1
+          ports:
+            - containerPort: 7500
+          command: ["/bin/bash"]
+          args:
+            - -c
+            - >-
+              cargo run --release --bin rust-trading-platform-api
+          env:
+            - name: FINNHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: pg-rtapp-conf
+                  key: FINNHUB_TOKEN
+                  optional: false
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: pg-rtapp-conf
+                  key: DATABASE_URL
+                  optional: false
+        - name: rust-trading-platform-pipeline
+          image: rust-trading-platform:v1
+          command: ["/bin/bash"]
+          args:
+            - -c
+            - >-
+              cargo run --release --bin rust-trading-platform-pipeline
+          env:
+            - name: FINNHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: pg-rtapp-conf
+                  key: FINNHUB_TOKEN
+                  optional: false
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: pg-rtapp-conf
+                  key: DATABASE_URL
+                  optional: false
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rtapp-service
+spec:
+  type: ClusterIP
+  selector:
+    app: rtapp
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 7500
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rtapp-ingress
+spec:
+  rules:
+    - host: mydomain.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rtapp-service
+                port:
+                  number: 80

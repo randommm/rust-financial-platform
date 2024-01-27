@@ -1,0 +1,10 @@
+auth:
+  enablePostgresUser: true
+  postgresPassword: "root_user_password_to_be_used"
+  username: "postgres"
+  password: "pg_password_here"
+  database: "tplatform"
+primary:
+  persistence:
+    enabled: true
+    size: "8Gi"

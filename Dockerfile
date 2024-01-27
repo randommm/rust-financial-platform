@@ -1,6 +1,6 @@
 FROM rust
 
-WORKDIR /opt
+WORKDIR /app
 
 RUN cargo install sqlx-cli
 
