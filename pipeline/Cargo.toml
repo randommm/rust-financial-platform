@@ -2,6 +2,7 @@
 name = "rust-financial-platform-pipeline"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
 
 [dependencies]
 tokio-tungstenite = { version = "0.21.0", features = ["native-tls"] }

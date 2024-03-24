@@ -8,6 +8,7 @@ opt-level = 3
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
 
 [workspace.dependencies]
 tokio = { version = "1.16.1", features = ["full"] }
