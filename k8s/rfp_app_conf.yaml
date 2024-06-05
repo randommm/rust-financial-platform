@@ -16,7 +16,7 @@ spec:
     spec:
       initContainers:
         - name: rust-financial-platform-migrate
-          image: rust-financial-platform:v1
+          image: ghcr.io/randommm/rust-financial-platform
           command: ["/bin/bash"]
           args:
             - -c
@@ -37,7 +37,7 @@ spec:
                   optional: false
       containers:
         - name: rust-financial-platform-api
-          image: rust-financial-platform:v1
+          image: ghcr.io/randommm/rust-financial-platform
           ports:
             - containerPort: 7500
           command: ["/bin/bash"]
@@ -59,7 +59,7 @@ spec:
                   key: DATABASE_URL
                   optional: false
         - name: rust-financial-platform-pipeline
-          image: rust-financial-platform:v1
+          image: ghcr.io/randommm/rust-financial-platform
           command: ["/bin/bash"]
           args:
             - -c
