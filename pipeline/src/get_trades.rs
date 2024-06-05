@@ -32,7 +32,7 @@ pub async fn get_trades(
         let mut url = url::Url::parse(&connect_addr)?;
 
         println!("Attempting to connect");
-        let conn = connect_async(&url).await;
+        let conn = connect_async(url.as_str()).await;
         let Ok((ws_stream, _)) = conn else {
             println!("Connection failed, will attempt to connect again");
             continue;
