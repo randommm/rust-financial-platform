@@ -33,7 +33,7 @@ and build then image there
 
 `docker build . -t my-rust-financial-platform`
 
-## Deploy a PostgreSQL database for the app
+## Deploy the app with PostgreSQL database
 
 Edit the username and password at postgres_helm_conf.yaml and rfp-app_secrets_conf.yaml
 
@@ -47,15 +47,19 @@ Then install Postgres on Kubernetes using Helm:
 
 And run:
 
-`kubectl apply -f rfp-app_secrets_conf.yaml`
+`kubectl apply -f rfp_secrets_conf.yaml`
 
-`kubectl apply -f rfp-app_conf.yaml`
+`kubectl apply -f rfp_app_conf.yaml`
 
 `kubectl apply -f pgadmin_conf.yaml`
 
 Check the IP address of the website with
 
 `kubectl get ingress`
+
+And change your /etc/hosts accordingly.
+
+## PGAdmin
 
 You can optionally setup the pgAdmin web server, by running:
 

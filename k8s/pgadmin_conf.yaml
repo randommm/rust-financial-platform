@@ -31,7 +31,7 @@ spec:
             claimName: pvc-pgadmin
       containers:
         - name: pgadmin
-          image: dpage/pgadmin4
+          image: docker.io/dpage/pgadmin4
           ports:
             - containerPort: 80
           volumeMounts:
